@@ -30,7 +30,9 @@ fn link_dobby() {
     println!("cargo:warning=lib_path={}", lib_path.display());
     println!("cargo:rustc-link-search=native={}", lib_path.display());
     println!("cargo:rustc-link-lib=static=dobby");
-    println!("cargo:rustc-link-lib=dylib=stdc++");
+    #[cfg(not(target_os = "windows"))] {
+        println!("cargo:rustc-link-lib=dylib=stdc++");
+    }
 }
 
 fn main() {
