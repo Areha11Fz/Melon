@@ -34,6 +34,7 @@ pub const MemoryOperationError_kNotSupportAllocateExecutableMemory: MemoryOperat
 pub const MemoryOperationError_kNotEnough: MemoryOperationError = 3;
 pub const MemoryOperationError_kNone: MemoryOperationError = 4;
 pub type MemoryOperationError = ::std::os::raw::c_uint;
+#[cfg(not(target_os = "windows"))]
 extern "C" {
     pub fn CodePatch(
         address: *mut ::std::os::raw::c_void,
