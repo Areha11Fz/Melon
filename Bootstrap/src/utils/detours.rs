@@ -35,6 +35,19 @@ pub fn hook(target: usize, replacement: usize) -> Result<&'static (), Box<dyn er
     use dobby_rs::{Address};
 
     unsafe {
+        use winapi::um::libloaderapi::GetModuleHandleA;
+        use winapi::um::libloaderapi::GetProcAddress;
+        use winapi::um::memoryapi::VirtualProtect;
+
+        let h = GetModuleHandleA("ntdll\0" as *const _ as *const i8);
+        let f = GetProcAddress(h, "NtProtectVirtualMemory\0" as *const _ as *const i8);
+
+        let mut old = 0u32;
+        let _b = VirtualProtect(f.cast(), 100, 0x40, &mut old as *mut u32);
+        let bytes: [u8; 7] = [0x4C, 0x8B, 0xD1, 0xB8, 0x50, 0x00, 0x00];
+        std::ptr::copy_nonoverlapping(bytes.as_ptr(), f.cast(), 7);
+        let _b = VirtualProtect(f.cast(), 100, old, &mut old as *mut u32);
+
         let res = dobby_rs::hook(target as Address, replacement as Address)?;
         Ok(transmute(res))
     }
