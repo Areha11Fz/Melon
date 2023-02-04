@@ -19,18 +19,33 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>F:\Genshin Impact\3300\MelonLoader\net6\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>F:\Genshin Impact\3300\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>F:\Genshin Impact\3300\MelonLoader\Il2CppAssemblies\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
     <Reference Include="Il2Cppmscorlib">
       <Private>false</Private>
       <HintPath>Libs\Il2Cppmscorlib.dll</HintPath>
     </Reference>
+    <Reference Include="Rewired_Core">
+      <HintPath>F:\Genshin Impact\3300\MelonLoader\Il2CppAssemblies\Rewired_Core.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>F:\Genshin Impact\3300\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Libs"/>
+    <Folder Include="Libs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Iced" Version="1.17.0"/>
+    <PackageReference Include="Iced" Version="1.17.0" />
     <PackageReference Include="IsExternalInit" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -38,6 +53,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Il2CppInterop.Common\Il2CppInterop.Common.csproj"/>
+    <ProjectReference Include="..\Il2CppInterop.Common\Il2CppInterop.Common.csproj" />
   </ItemGroup>
 </Project>

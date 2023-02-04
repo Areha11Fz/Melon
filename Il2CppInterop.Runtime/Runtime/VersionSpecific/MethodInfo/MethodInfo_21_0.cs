@@ -20,20 +20,23 @@ namespace Il2CppInterop.Runtime.Runtime.VersionSpecific.MethodInfo
         }
         internal unsafe struct Il2CppMethodInfo_21_0
         {
-            public void* methodPointer;
-            public void* invoker_method;
+            public Il2CppClass* declaring_type; // 0
+            public void* methodPointer; // 0x8
+            public void* invoker_method; // 0x10
+
             public byte* name;
-            public Il2CppClass* declaring_type;
             public Il2CppTypeStruct* return_type;
             public Il2CppParameterInfo* parameters;
+
+            public ushort slot; // 0x30
+            public byte parameters_count; // 0x32
+
             public void* runtime_data;
             public void* generic_data;
             public int customAttributeIndex;
             public uint token;
             public ushort flags;
             public ushort iflags;
-            public ushort slot;
-            public byte parameters_count;
             public Bitfield0 _bitfield0;
             internal enum Bitfield0 : byte
             {

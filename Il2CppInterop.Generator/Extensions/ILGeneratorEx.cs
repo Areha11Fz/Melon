@@ -184,6 +184,8 @@ public static class ILGeneratorEx
                 body.Emit(OpCodes.Ldarg, argumentIndex);
                 body.Emit(OpCodes.Ldind_Ref);
                 body.Emit(OpCodes.Call, imports.IL2CPP_Il2CppObjectBaseToPtrNotNull.Value);
+                if (unboxNonBlittableType)
+                    body.Emit(OpCodes.Call, imports.IL2CPP_il2cpp_object_unbox.Value);
             }
             else
             {

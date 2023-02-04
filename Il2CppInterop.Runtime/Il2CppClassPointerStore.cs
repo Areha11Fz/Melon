@@ -48,7 +48,11 @@ public static class Il2CppClassPointerStore<T>
                         targetType.Name);
             else
                 NativeClassPtr =
+<<<<<<< HEAD
+                    IL2CPP.GetIl2CppClass(assemblyName.EndsWith(".dll") ? assemblyName[0..^4] : assemblyName, @namespace, name);
+=======
                     IL2CPP.GetIl2CppClass(targetType.Module.Name, targetType.Namespace ?? "", targetType.Name);
+>>>>>>> parent of 44f18f0 (Preserve enum name information when prefixing)
         }
 
         if (targetType.IsPrimitive || targetType == typeof(string))

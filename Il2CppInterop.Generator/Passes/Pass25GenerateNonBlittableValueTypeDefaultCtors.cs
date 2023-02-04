@@ -21,6 +21,8 @@ public static class Pass25GenerateNonBlittableValueTypeDefaultCtors
 
                 typeContext.NewType.Methods.Add(emptyCtor);
 
+                emptyCtor.Body.InitLocals = true;
+
                 var local0 = new VariableDefinition(assemblyContext.Imports.Module.IntPtr());
                 emptyCtor.Body.Variables.Add(local0);
 
