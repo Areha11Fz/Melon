@@ -152,11 +152,32 @@ public static unsafe partial class ClassInjector
         RegisterTypeInIl2Cpp(typeof(T), options);
     }
 
-    static Il2CppMethodInfo* CopyMethod(Il2CppMethodInfo* orig)
+    private static Il2CppMethodInfo* CopyMethod(Il2CppMethodInfo* orig)
     {
-        var newmethod = (Il2CppMethodInfo*)Marshal.AllocHGlobal(200);
-        Buffer.MemoryCopy(orig, newmethod, 200, 200);
-        return newmethod;
+        var newmethod = UnityVersionHandler.NewMethod();
+        Buffer.MemoryCopy(orig, newmethod.MethodInfoPointer, 200, 200);
+        return newmethod.MethodInfoPointer;
+    }
+
+    private static KeyValuePair<DelegateSupport.MethodSignature, IntPtr> MapMethodSig(MethodInfo proxy) =>
+        KeyValuePair.Create(new DelegateSupport.MethodSignature(proxy, false), InjectorHelpers.GetIl2CppMethodInfoPointer(proxy));
+
+    private static IDictionary<DelegateSupport.MethodSignature, IntPtr> s_methodHijacks;
+    private static void SetupHijacks()
+    {
+        if (s_methodHijacks == null)
+        {
+            s_methodHijacks = new Dictionary<DelegateSupport.MethodSignature, IntPtr>();
+
+            var flags = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            s_methodHijacks.Add(MapMethodSig(typeof(MoleMole.BaseActor._CoBody_d__121).GetMethod("MoveNext", flags)));
+            s_methodHijacks.Add(MapMethodSig(typeof(MoleMole.BaseActor._CoBody_d__121).GetMethod("System_Collections_IEnumerator_get_Current", flags)));
+            s_methodHijacks.Add(MapMethodSig(typeof(MiHoYo.FBIK.FBIKTest).GetMethod("Start", flags)));
+            s_methodHijacks.Add(MapMethodSig(typeof(MiHoYo.FBIK.FBIKTest).GetMethod("OnAnimatorIK", flags)));
+
+            foreach (var m in s_methodHijacks)
+                IL2CPP.il2cpp_method_get_name(m.Value); // ensure initialized
+        }
     }
 
     public static void RegisterTypeInIl2Cpp(Type type, RegisterTypeOptions options)
@@ -194,7 +215,7 @@ public static unsafe partial class ClassInjector
         }
         else
         {
-            Logger.Instance.LogWarning("[GI Warning] Injecting class {type} unsupported", type);
+            Logger.Instance.LogWarning("[GI Warning] Injecting class {name} unsupported", type.FullName);
             return;
         }
 
@@ -208,100 +229,58 @@ public static unsafe partial class ClassInjector
         var methods_list = klass.Methods;
         var method_count = klass.MethodCount;
 
-        List<IntPtr> new_methods_list = new();
+        List<INativeMethodInfoStruct> new_methods_list = new();
         List<VirtualInvokeData> new_vtable = new();
 
-        Dictionary<string, int> method_indices = new();
-        for (var i = 0; i < method_count; i++)
-        {
-            var method = methods_list[i];
-            var ptr = IL2CPP.il2cpp_method_get_name((IntPtr)method);
-            var name = Marshal.PtrToStringAnsi(ptr);
-
-            if (name[0] != '.')
-            {
-                var dot = name.LastIndexOf('.');
-                if (dot != -1)
-                    name = name.Substring(dot + 1);
-            }
-
-            method_indices[name] = i;
-            new_methods_list.Add((IntPtr)method);
-            //Console.WriteLine("{0} {1}", i, name);
-        }
-
         var vtable = (VirtualInvokeData*)klass.VTable;
-        for (var i = 0; i < klass.VtableCount; i++) 
+        for (var i = 0; i < klass.VtableCount; i++)
             new_vtable.Add(vtable[i]);
 
-        var newctor = UnityVersionHandler.Wrap(CopyMethod(methods_list[method_indices[".ctor"]]));
+        var newctor = UnityVersionHandler.Wrap(CopyMethod(methods_list[0]));
         newctor.MethodPointer = Marshal.GetFunctionPointerForDelegate(CreateEmptyCtor(type, Array.Empty<FieldInfo>()));
-        new_methods_list[method_indices[".ctor"]] = newctor.Pointer;
+        new_methods_list.Add(newctor);
 
-        string[] supported = { "Awake", "Start", "OnGUI", "LateUpdate", "Update", "OnDestroy", "OnApplicationQuit", "FixedUpdate",
-        "MoveNext", "Reset", "get_Current"};
-
+        SetupHijacks();
         foreach (var m in type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
         {
-            var name = m.Name;
-            if (!supported.Contains(name))
+            var sig = new DelegateSupport.MethodSignature(m, false);
+            if (!s_methodHijacks.ContainsKey(sig) || !IsMethodEligible(m))
             {
-                //Console.WriteLine(name + " Not Supported");
+                //Console.WriteLine(name + " Not Eligible");
                 continue;
             }
 
-            if (method_indices.ContainsKey(name))
+            var newmethod = UnityVersionHandler.Wrap(CopyMethod((Il2CppMethodInfo*)s_methodHijacks[sig]));
+            newmethod.MethodPointer = Marshal.GetFunctionPointerForDelegate(GetOrCreateTrampoline(m));
+
+            var slot = newmethod.Slot;
+            if (slot != ushort.MaxValue && slot < new_vtable.Count)
             {
-                var newmethod = UnityVersionHandler.Wrap(CopyMethod(methods_list[method_indices[name]]));
-                newmethod.MethodPointer = Marshal.GetFunctionPointerForDelegate(GetOrCreateTrampoline(m));
-                //Console.WriteLine("Override {0}", new Il2CppSystem.Reflection.MethodInfo(IL2CPP.il2cpp_method_get_object(newmethod, klass)).Name);
-
-                var slot = newmethod.Slot;
-                if (slot != ushort.MaxValue)
-                {
-                    var v = new_vtable[slot];
-                    v.method = (Il2CppMethodInfo*)newmethod.Pointer;
-                    v.methodPtr = newmethod.MethodPointer;
-                    new_vtable[slot] = v;
-                }
-
-                new_methods_list[method_indices[name]] = newmethod.Pointer;
+                var v = new_vtable[slot];
+                v.method = newmethod.MethodInfoPointer;
+                v.methodPtr = newmethod.MethodPointer;
+                new_vtable[slot] = v;
             }
-            else
-            {
-                var newmethod = UnityVersionHandler.Wrap(CopyMethod(methods_list[method_indices["Start"]]));
-                newmethod.MethodPointer = Marshal.GetFunctionPointerForDelegate(GetOrCreateTrampoline(m));
 
-                IntPtr unk = *((IntPtr*)(newmethod.Pointer + 64));
-                IntPtr newunk = Marshal.AllocHGlobal(24);
-                Buffer.MemoryCopy(unk.ToPointer(), newunk.ToPointer(), 24, 24);
-                *((IntPtr*)(newmethod.Pointer + 64)) = newunk;
+            var newex = Marshal.AllocHGlobal(24);
+            Buffer.MemoryCopy(newmethod.Extra.ToPointer(), newex.ToPointer(), 24, 24);
+            newmethod.Extra = newex;
+            newmethod.Name = (IntPtr)((ulong)Marshal.StringToHGlobalAnsi(m.Name) ^ 0x350ECCA847E1F700);
 
-                // +16 name ^ 0x350ECCA847E1F700
-                *((IntPtr*)(newunk + 16)) = (IntPtr)((ulong)Marshal.StringToHGlobalAnsi(name) ^ 0x350ECCA847E1F700);
+            //Console.WriteLine("Create {0}", new Il2CppSystem.Reflection.MethodInfo(IL2CPP.il2cpp_method_get_object(newmethod.Pointer, klass.Pointer)).Name);
 
-                //Console.WriteLine("Create {0}", new Il2CppSystem.Reflection.MethodInfo(IL2CPP.il2cpp_method_get_object(newmethod, klass)).Name);
-
-                new_methods_list.Add(newmethod.Pointer);
-            }
+            new_methods_list.Add(newmethod);
         }
 
         InjectorHelpers.Setup();
-
         
-        var method_list_size = new_methods_list.Count * sizeof(IntPtr);
         var size = klass.VtableCount * sizeof(VirtualInvokeData) + 328;
         var newklass = UnityVersionHandler.NewClass(klass.VtableCount);
-        var list = (Il2CppMethodInfo**)Marshal.AllocHGlobal(method_list_size);
+        var list = (Il2CppMethodInfo**)Marshal.AllocHGlobal(new_methods_list.Count * sizeof(IntPtr));
         Buffer.MemoryCopy(klass.ClassPointer, newklass.ClassPointer, size, size);
 
-        //Console.WriteLine("newklass {0:x} for {1}", newklass.Pointer, type.FullName);
         for (var i = 0; i < new_methods_list.Count; i++)
-        {
-            //*(IntPtr*)(new_methods_list[i] + 0) = newklass;
-            list[i] = (Il2CppMethodInfo*)new_methods_list[i];
-            //Console.WriteLine("New List {0}", new Il2CppSystem.Reflection.MethodInfo(IL2CPP.il2cpp_method_get_object(new_methods_list[i], newklass.Pointer)).Name);
-        }
+            list[i] = new_methods_list[i].MethodInfoPointer;
 
         var vt = (VirtualInvokeData*)newklass.VTable;
         for (var i = 0; i < klass.VtableCount; i++)
@@ -309,8 +288,8 @@ public static unsafe partial class ClassInjector
 
         newklass.Methods = list;
         newklass.MethodCount = (ushort)new_methods_list.Count;
-        newklass.ByValArg.Data = (IntPtr)InjectorHelpers.CreateClassToken(newklass.Pointer); // byvalarg
-        newklass.InstanceSize += (uint)sizeof(InjectedClassData); // instancesize
+        newklass.ByValArg.Data = (IntPtr)InjectorHelpers.CreateClassToken(newklass.Pointer);
+        newklass.InstanceSize += (uint)sizeof(InjectedClassData);
 
         //*(IntPtr*)(newklass + 256) += sizeof(InjectedClassData); // actualsize
         //*(uint*)(newklass + 248) = 0x1234;
@@ -322,7 +301,6 @@ public static unsafe partial class ClassInjector
         //*(IntPtr*)(newklass + 64) = (IntPtr)0; // interop
         //*(IntPtr*)(newklass + 168) = (IntPtr)0; // metadata?
         //*(IntPtr*)(newklass + 144) = (IntPtr)0; // metadata?
-        //*(IntPtr*)(newklass + 112) = (IntPtr)0;
 
         Il2CppClassPointerStore.SetNativeClassPointer(type, newklass.Pointer);
         RuntimeSpecificsStore.SetClassInfo(newklass.Pointer, true);

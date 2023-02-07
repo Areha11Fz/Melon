@@ -24,4 +24,5 @@ public interface INativeMethodInfoStruct : INativeStruct
     bool IsGeneric { get; set; }
     bool IsInflated { get; set; }
     bool IsMarshalledFromNative { get; set; }
+    ref IntPtr Extra { get => throw new NotSupportedException(); }
 }

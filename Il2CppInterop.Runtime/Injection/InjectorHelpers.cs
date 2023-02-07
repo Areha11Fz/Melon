@@ -127,6 +127,23 @@ namespace Il2CppInterop.Runtime.Injection
             return methodInfo.MethodPointer;
         }
 
+        internal static IntPtr GetIl2CppMethodInfoPointer(MethodBase proxyMethod)
+        {
+            if (proxyMethod == null) return IntPtr.Zero;
+
+            FieldInfo methodInfoPointerField = Il2CppInteropUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(proxyMethod);
+            if (methodInfoPointerField == null)
+                throw new ArgumentException($"Couldn't find the generated method info pointer for {proxyMethod.Name}");
+
+            // Il2CppClassPointerStore calls the static constructor for the type
+            Il2CppClassPointerStore.GetNativeClassPointer(proxyMethod.DeclaringType);
+
+            IntPtr methodInfoPointer = (IntPtr)methodInfoPointerField.GetValue(null);
+            if (methodInfoPointer == IntPtr.Zero)
+                throw new ArgumentException($"Generated method info pointer for {proxyMethod.Name} doesn't point to any il2cpp method info");
+            return methodInfoPointer;
+        }
+
         private static long s_LastInjectedToken = -2;
         private static readonly ConcurrentDictionary<long, IntPtr> s_InjectedClasses = new();
         /// <summary> (namespace, class, image) : class </summary>

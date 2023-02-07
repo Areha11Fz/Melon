@@ -18,25 +18,47 @@ namespace Il2CppInterop.Runtime.Runtime.VersionSpecific.MethodInfo
             if (ptr == null) return null;
             return new NativeStructWrapper((IntPtr)ptr);
         }
+
+        [StructLayout(LayoutKind.Explicit, Size = 24)]
+        internal unsafe struct GIExtraMethodInfo
+        {
+            [FieldOffset(16)]
+            public byte* name;
+        }
+
+        [StructLayout(LayoutKind.Explicit, Size = 200)]
         internal unsafe struct Il2CppMethodInfo_21_0
         {
-            public Il2CppClass* declaring_type; // 0
-            public void* methodPointer; // 0x8
-            public void* invoker_method; // 0x10
+            [FieldOffset(0)]
+            public Il2CppClass* declaring_type;
+            [FieldOffset(8)]
+            public void* methodPointer;
+            [FieldOffset(16)]
+            public void* invoker_method;
+            [FieldOffset(0x30)]
+            public ushort slot;
+            [FieldOffset(0x32)]
+            public byte parameters_count;
+            [FieldOffset(0x40)]
+            public GIExtraMethodInfo* extra_info;
 
-            public byte* name;
+            [FieldOffset(0)]
             public Il2CppTypeStruct* return_type;
+            [FieldOffset(0)]
             public Il2CppParameterInfo* parameters;
-
-            public ushort slot; // 0x30
-            public byte parameters_count; // 0x32
-
+            [FieldOffset(0)]
             public void* runtime_data;
+            [FieldOffset(0)]
             public void* generic_data;
+            [FieldOffset(0)]
             public int customAttributeIndex;
+            [FieldOffset(0)]
             public uint token;
+            [FieldOffset(0)]
             public ushort flags;
+            [FieldOffset(0)]
             public ushort iflags;
+            [FieldOffset(0)]
             public Bitfield0 _bitfield0;
             internal enum Bitfield0 : byte
             {
@@ -55,7 +77,8 @@ namespace Il2CppInterop.Runtime.Runtime.VersionSpecific.MethodInfo
             public IntPtr Pointer { get; }
             private Il2CppMethodInfo_21_0* _ => (Il2CppMethodInfo_21_0*)Pointer;
             public Il2CppMethodInfo* MethodInfoPointer => (Il2CppMethodInfo*)Pointer;
-            public ref IntPtr Name => ref *(IntPtr*)&_->name;
+            public ref IntPtr Name => ref *(IntPtr*)&_->extra_info->name;
+            public ref IntPtr Extra => ref *(IntPtr*)&_->extra_info;
             public ref ushort Slot => ref _->slot;
             public ref IntPtr MethodPointer => ref *(IntPtr*)&_->methodPointer;
             public ref Il2CppClass* Class => ref _->declaring_type;

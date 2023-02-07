@@ -27,15 +27,6 @@ public static class DelegateSupport
 
     private static readonly ConcurrentDictionary<MethodInfo, Delegate> NativeToManagedTrampolines = new();
 
-    private static readonly ConcurrentDictionary<IntPtr, Il2CppToMonoDelegateReference> FakeObjectToDelegate = new();
-
-    public static object FakeObjectToMonoDelegateReference(IntPtr objptr)
-    {
-        FakeObjectToDelegate.TryGetValue(objptr, out var obj);
-        //LogError(string.Format("got {0}", obj));
-        return obj;
-    }
-
     internal static Type GetOrCreateDelegateType(MethodSignature signature, MethodInfo managedMethod)
     {
         return ourDelegateTypes.GetOrAdd(signature,
@@ -140,7 +131,7 @@ public static class DelegateSupport
 
         bodyBuilder.Emit(OpCodes.Ldarg_0);
         bodyBuilder.Emit(OpCodes.Call,
-            typeof(DelegateSupport).GetMethod(nameof(FakeObjectToMonoDelegateReference))!);
+            typeof(ClassInjectorBase).GetMethod(nameof(ClassInjectorBase.GetMonoObjectFromIl2CppPointer))!);
         bodyBuilder.Emit(OpCodes.Castclass, typeof(Il2CppToMonoDelegateReference));
         bodyBuilder.Emit(OpCodes.Ldfld,
             typeof(Il2CppToMonoDelegateReference).GetField(nameof(Il2CppToMonoDelegateReference.ReferencedDelegate)));
@@ -247,8 +238,8 @@ public static class DelegateSupport
         if (classTypePtr == IntPtr.Zero)
             throw new ArgumentException($"Type {typeof(TIl2Cpp)} has uninitialized class pointer");
 
-        //if (Il2CppClassPointerStore<Il2CppToMonoDelegateReference>.NativeClassPtr == IntPtr.Zero)
-        //    ClassInjector.RegisterTypeInIl2Cpp<Il2CppToMonoDelegateReference>();
+        if (Il2CppClassPointerStore<Il2CppToMonoDelegateReference>.NativeClassPtr == IntPtr.Zero)
+            ClassInjector.RegisterTypeInIl2Cpp<Il2CppToMonoDelegateReference>();
 
         var il2CppDelegateType = Il2CppSystem.Type.internal_from_handle(IL2CPP.il2cpp_class_get_type(classTypePtr));
         var nativeDelegateInvokeMethod = il2CppDelegateType.GetMethod("Invoke");
@@ -295,18 +286,24 @@ public static class DelegateSupport
         methodInfo.Slot = ushort.MaxValue;
         methodInfo.IsMarshalledFromNative = true;
 
-        var fakeDelegateReference = new Object();
-        var delegateReference = new Il2CppToMonoDelegateReference(@delegate, methodInfo.Pointer, fakeDelegateReference);
-        FakeObjectToDelegate.TryAdd(fakeDelegateReference.Pointer, delegateReference);
+        var delegateReference = new Il2CppToMonoDelegateReference(@delegate, methodInfo.Pointer);
 
         Il2CppSystem.Delegate converted;
-        var nativeDelegatePtr = IL2CPP.il2cpp_object_new(classTypePtr);
-        converted = new Il2CppSystem.Delegate(nativeDelegatePtr);
+        if (UnityVersionHandler.MustUseDelegateConstructor)
+        {
+            converted = ((TIl2Cpp)Activator.CreateInstance(typeof(TIl2Cpp), delegateReference.Cast<Object>(),
+                methodInfo.Pointer)).Cast<Il2CppSystem.Delegate>();
+        }
+        else
+        {
+            var nativeDelegatePtr = IL2CPP.il2cpp_object_new(classTypePtr);
+            converted = new Il2CppSystem.Delegate(nativeDelegatePtr);
+        }
 
         converted.method_ptr = methodInfo.MethodPointer;
         converted.method_info = nativeDelegateInvokeMethod; // todo: is this truly a good hack?
         converted.method = methodInfo.Pointer;
-        converted.m_target = fakeDelegateReference;
+        converted.m_target = delegateReference;
 
         if (UnityVersionHandler.MustUseDelegateConstructor)
         {
@@ -389,17 +386,22 @@ public static class DelegateSupport
         }
     }
 
-    private class Il2CppToMonoDelegateReference
+    private class Il2CppToMonoDelegateReference : Object
     {
-        public Object FakeObj;
         public IntPtr MethodInfo;
         public Delegate ReferencedDelegate;
 
-        public Il2CppToMonoDelegateReference(Delegate referencedDelegate, IntPtr methodInfo, Object fakeObj)
+        public Il2CppToMonoDelegateReference(IntPtr obj0) : base(obj0)
         {
+        }
+
+        public Il2CppToMonoDelegateReference(Delegate referencedDelegate, IntPtr methodInfo) : base(
+            ClassInjector.DerivedConstructorPointer<Il2CppToMonoDelegateReference>())
+        {
+            ClassInjector.DerivedConstructorBody(this);
+
             ReferencedDelegate = referencedDelegate;
             MethodInfo = methodInfo;
-            FakeObj = fakeObj;
         }
 
         ~Il2CppToMonoDelegateReference()
@@ -407,9 +409,6 @@ public static class DelegateSupport
             Marshal.FreeHGlobal(MethodInfo);
             MethodInfo = IntPtr.Zero;
             ReferencedDelegate = null;
-            LogError(string.Format("~Il2CppToMonoDelegateReference: {0}", FakeObj));
-            FakeObjectToDelegate.TryRemove(FakeObj.Pointer, out var _);
-            FakeObj = null;
         }
     }
 }

@@ -25,18 +25,16 @@ namespace Il2CppInterop.Runtime.Runtime.VersionSpecific.Class
         [StructLayout(LayoutKind.Explicit, Size = 328)]
         internal unsafe struct Il2CppClass_23_0
         {
-            [FieldOffset(120)]
-            public Il2CppMethodInfo** methods;
-            [FieldOffset(300)]
-            public ushort method_count;
-            [FieldOffset(272)]
-            public uint instance_size;
-
             [FieldOffset(72)]
             public Il2CppTypeStruct byval_arg;
-
+            [FieldOffset(120)]
+            public Il2CppMethodInfo** methods;
+            [FieldOffset(272)]
+            public uint instance_size;
             [FieldOffset(294)]
             public ushort vtable_count;
+            [FieldOffset(300)]
+            public ushort method_count;
 
             [FieldOffset(0)]
             public Il2CppImage* image;
@@ -73,7 +71,7 @@ namespace Il2CppInterop.Runtime.Runtime.VersionSpecific.Class
             [FieldOffset(0)]
             public Il2CppClass** implementedInterfaces;
             [FieldOffset(0)]
-            public Il2CppRuntimeInterfaceOffsetPair* interfaceOffsets; //+152
+            public Il2CppRuntimeInterfaceOffsetPair* interfaceOffsets;
             [FieldOffset(0)]
             public void* static_fields;
             [FieldOffset(0)]
@@ -87,7 +85,7 @@ namespace Il2CppInterop.Runtime.Runtime.VersionSpecific.Class
             [FieldOffset(0)]
             public ulong cctor_thread;
             [FieldOffset(0)]
-            public int genericContainerIndex; //200
+            public int genericContainerIndex;
             [FieldOffset(0)]
             public int customAttributeIndex;
             [FieldOffset(0)]
@@ -119,7 +117,7 @@ namespace Il2CppInterop.Runtime.Runtime.VersionSpecific.Class
             [FieldOffset(0)]
             public ushort interface_offsets_count;
             [FieldOffset(0)]
-            public byte typeHierarchyDepth; //256
+            public byte typeHierarchyDepth;
             [FieldOffset(0)]
             public byte genericRecursionDepth;
             [FieldOffset(0)]
