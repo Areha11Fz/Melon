@@ -140,6 +140,7 @@ namespace MelonLoader
 
             MelonLogger.MsgDirect("------------------------------");
             MelonLogger.MsgDirect(GetVersionString());
+            MelonLogger.MsgDirect($"for Genshin Impact by azzu");
             MelonLogger.MsgDirect($"OS: {GetOSVersion()}");
             MelonLogger.MsgDirect($"Hash Code: {MelonUtils.HashCode}");
             MelonLogger.MsgDirect("------------------------------");

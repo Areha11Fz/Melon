@@ -34,8 +34,8 @@ namespace MelonLoader.Support
             }).AddLogger(new InteropLogger())
               .AddHarmonySupport();
 
-            if (MelonLaunchOptions.Console.CleanUnityLogs)
-                ConsoleCleaner();
+            //if (MelonLaunchOptions.Console.CleanUnityLogs)
+            //    ConsoleCleaner();
 
             SceneHandler.Init();
 

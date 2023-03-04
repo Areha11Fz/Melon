@@ -89,8 +89,39 @@ pub fn managed_dir() -> Result<PathBuf, Box<dyn Error>> {
     }
 }
 
+pub fn install_dir() -> Result<PathBuf, Box<dyn Error>> {
+    use winapi::shared::minwindef::MAX_PATH;
+    use winapi::um::libloaderapi::{
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, 
+        GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, 
+        GetModuleHandleExA, 
+        GetModuleFileNameA
+    };
+
+    let mut m = std::ptr::null_mut();
+    let r = unsafe { GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, 
+        &install_dir as *const _ as *const i8, &mut m) };
+    if r == 0 {
+        Err("Failed to get installation directory!")?
+    }
+
+    let mut name = [0; MAX_PATH];
+    let len = unsafe { GetModuleFileNameA(m, name.as_mut_ptr() as *mut i8, MAX_PATH as u32) } as usize;
+    if len != 0 {
+        // INSTALLDIR/MelonLoader/Dependencies/Bootstrap.dll
+        let mut path : PathBuf = String::from_utf8(name[0..len].to_vec())?.into();
+        let _ = path.pop();
+        let _ = path.pop();
+        let _ = path.pop();
+        return Ok(path)
+    }
+    else {
+        Err("Failed to get installation directory!")?
+    }
+}
+
 pub fn melonloader_dir() -> Result<PathBuf, Box<dyn Error>> {
-    let melonloader_path = base_dir()?.join("MelonLoader");
+    let melonloader_path = install_dir()?.join("MelonLoader");
 
     match melonloader_path.exists() {
         true => Ok(melonloader_path),
