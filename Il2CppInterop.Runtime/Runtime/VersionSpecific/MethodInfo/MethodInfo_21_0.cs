@@ -22,26 +22,28 @@ namespace Il2CppInterop.Runtime.Runtime.VersionSpecific.MethodInfo
         [StructLayout(LayoutKind.Explicit, Size = 24)]
         internal unsafe struct GIExtraMethodInfo
         {
-            [FieldOffset(16)]
+            [FieldOffset(0)]
             public byte* name;
         }
 
         [StructLayout(LayoutKind.Explicit, Size = 200)]
         internal unsafe struct Il2CppMethodInfo_21_0
         {
-            [FieldOffset(0)]
-            public Il2CppClass* declaring_type;
             [FieldOffset(8)]
             public void* methodPointer;
             [FieldOffset(16)]
             public void* invoker_method;
-            [FieldOffset(0x30)]
+            [FieldOffset(0x28)]
+            public uint token;
+            [FieldOffset(0x2E)]
             public ushort slot;
             [FieldOffset(0x32)]
             public byte parameters_count;
             [FieldOffset(0x40)]
             public GIExtraMethodInfo* extra_info;
 
+            [FieldOffset(0)]
+            public Il2CppClass* declaring_type;
             [FieldOffset(0)]
             public Il2CppTypeStruct* return_type;
             [FieldOffset(0)]
@@ -52,8 +54,6 @@ namespace Il2CppInterop.Runtime.Runtime.VersionSpecific.MethodInfo
             public void* generic_data;
             [FieldOffset(0)]
             public int customAttributeIndex;
-            [FieldOffset(0)]
-            public uint token;
             [FieldOffset(0)]
             public ushort flags;
             [FieldOffset(0)]

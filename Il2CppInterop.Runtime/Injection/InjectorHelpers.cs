@@ -32,6 +32,11 @@ namespace Il2CppInterop.Runtime.Injection
 
         internal static IntPtr Il2CppHandle = NativeLibrary.Load("UserAssembly", typeof(InjectorHelpers).Assembly, null);
 
+        private static IntPtr classFromType = Il2CppHandle + 0x985300;
+        private static IntPtr getTypeInfoFromTypeDefinitionIndex = Il2CppHandle + 0x9907A0;
+        private static IntPtr classFromName = Il2CppHandle + 0x985590;
+        private static IntPtr getMBMethods = Il2CppHandle + 0x98B510;
+
         internal static readonly Dictionary<Type, OpCode> StIndOpcodes = new()
         {
             [typeof(byte)] = OpCodes.Stind_I1,
@@ -171,8 +176,6 @@ namespace Il2CppInterop.Runtime.Injection
         internal static d_GetMBMethods GetMBMethodsOriginal;
         private static d_GetMBMethods FindGetMBMethods()
         {
-            var getMBMethods = Il2CppHandle + 0x28AC690;
-
             Detour.Apply(getMBMethods, GetMBMethodsDetour, out GetMBMethodsOriginal);
             return Marshal.GetDelegateForFunctionPointer<d_GetMBMethods>(getMBMethods);
         }
@@ -256,8 +259,6 @@ namespace Il2CppInterop.Runtime.Injection
         internal static d_ClassFromName ClassFromNameOriginal;
         private static d_ClassFromName FindClassFromName()
         {
-            var classFromName = Il2CppHandle + 0x28A4020;
-
             //var classFromNameAPI = GetIl2CppExport(nameof(IL2CPP.il2cpp_class_from_name));
             //Logger.Instance.LogTrace("il2cpp_class_from_name: 0x{ClassFromNameApiAddress}", classFromNameAPI.ToInt64().ToString("X2"));
 
@@ -284,8 +285,6 @@ namespace Il2CppInterop.Runtime.Injection
         internal static d_GetTypeInfoFromTypeDefinitionIndex GetTypeInfoFromTypeDefinitionIndexOriginal;
         private static d_GetTypeInfoFromTypeDefinitionIndex FindGetTypeInfoFromTypeDefinitionIndex(bool forceICallMethod = false)
         {
-            IntPtr getTypeInfoFromTypeDefinitionIndex = Il2CppHandle + 0x28B1980;
-
             // il2cpp_image_get_class is added in 2018.3.0f1
             //if (Il2CppInteropRuntime.Instance.UnityVersion < new Version(2018, 3, 0) || forceICallMethod)
             //{
@@ -406,8 +405,6 @@ namespace Il2CppInterop.Runtime.Injection
         internal static d_ClassFromIl2CppType ClassFromIl2CppTypeOriginal;
         private static d_ClassFromIl2CppType FindClassFromIl2CppType()
         {
-            var classFromType = Il2CppHandle + 0x28A6540;
-
             //var classFromTypeAPI = GetIl2CppExport(nameof(IL2CPP.il2cpp_class_from_il2cpp_type));
             //Logger.Instance.LogTrace("il2cpp_class_from_il2cpp_type: 0x{ClassFromTypeApiAddress}", classFromTypeAPI.ToInt64().ToString("X2"));
 

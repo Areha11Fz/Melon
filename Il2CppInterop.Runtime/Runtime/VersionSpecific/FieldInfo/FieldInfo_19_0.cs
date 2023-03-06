@@ -18,13 +18,22 @@ namespace Il2CppInterop.Runtime.Runtime.VersionSpecific.FieldInfo
             if (ptr == null) return null;
             return new NativeStructWrapper((IntPtr)ptr);
         }
+
+        [StructLayout(LayoutKind.Explicit)]
         internal unsafe struct Il2CppFieldInfo_19_0
         {
-            public byte* name;
-            public Il2CppTypeStruct* type;
-            public Il2CppClass* parent;
+            [FieldOffset(0x1C)]
             public int offset;
+
+            [FieldOffset(0)]
+            public byte* name;
+            [FieldOffset(0)]
+            public Il2CppTypeStruct* type;
+            [FieldOffset(0)]
+            public Il2CppClass* parent;
+            [FieldOffset(0)]
             public int customAttributeIndex;
+            [FieldOffset(0)]
             public uint token;
         }
 

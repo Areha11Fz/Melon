@@ -57,6 +57,9 @@ public struct Il2CppAssemblyName
 
 public struct Il2CppString
 {
+    public Il2CppObject obj;
+    public int len;
+    public char chars;
 }
 
 public struct Il2CppMetadataTypeHandle
@@ -242,7 +245,7 @@ public unsafe struct Il2CppRuntimeInterfaceOffsetPair
 [StructLayout(LayoutKind.Sequential)]
 public struct Il2CppObject
 {
-    private readonly IntPtr data;
+    public readonly IntPtr data;
     private readonly IntPtr monitor;
 }
 
@@ -285,4 +288,23 @@ public unsafe struct Il2CppReflectionMethod
     public Il2CppMethodInfo* method;
     public Il2CppString* name;
     public IntPtr reftype; // Il2CppReflectionType*
+}
+
+public unsafe struct Il2CppReflectionType
+{
+    public Il2CppObject _object;
+    public Il2CppTypeStruct* type;
+}
+
+public unsafe struct Il2CppReflectionField
+{
+    public Il2CppObject _object;
+    public Il2CppClass* klass;
+    public Il2CppFieldInfo* field;
+}
+
+public unsafe struct Il2CppReflectionAssembly
+{
+    public Il2CppObject _object;
+    public Il2CppAssembly* assembly;
 }

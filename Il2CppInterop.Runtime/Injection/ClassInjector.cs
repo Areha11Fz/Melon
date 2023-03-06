@@ -245,10 +245,7 @@ public static unsafe partial class ClassInjector
         {
             var sig = new DelegateSupport.MethodSignature(m, false);
             if (!s_methodHijacks.ContainsKey(sig) || !IsMethodEligible(m))
-            {
-                //Console.WriteLine(name + " Not Eligible");
                 continue;
-            }
 
             var newmethod = UnityVersionHandler.Wrap(CopyMethod((Il2CppMethodInfo*)s_methodHijacks[sig]));
             newmethod.MethodPointer = Marshal.GetFunctionPointerForDelegate(GetOrCreateTrampoline(m));
@@ -265,10 +262,7 @@ public static unsafe partial class ClassInjector
             var newex = Marshal.AllocHGlobal(24);
             Buffer.MemoryCopy(newmethod.Extra.ToPointer(), newex.ToPointer(), 24, 24);
             newmethod.Extra = newex;
-            newmethod.Name = (IntPtr)((ulong)Marshal.StringToHGlobalAnsi(m.Name) ^ 0x350ECCA847E1F700);
-
-            //Console.WriteLine("Create {0}", new Il2CppSystem.Reflection.MethodInfo(IL2CPP.il2cpp_method_get_object(newmethod.Pointer, klass.Pointer)).Name);
-
+            newmethod.Name = (IntPtr)((ulong)Marshal.StringToHGlobalAnsi(m.Name) ^ 0x1A8F18D1494E4D31);
             new_methods_list.Add(newmethod);
         }
 
@@ -290,17 +284,6 @@ public static unsafe partial class ClassInjector
         newklass.MethodCount = (ushort)new_methods_list.Count;
         newklass.ByValArg.Data = (IntPtr)InjectorHelpers.CreateClassToken(newklass.Pointer);
         newklass.InstanceSize += (uint)sizeof(InjectedClassData);
-
-        //*(IntPtr*)(newklass + 256) += sizeof(InjectedClassData); // actualsize
-        //*(uint*)(newklass + 248) = 0x1234;
-        //*(IntPtr*)(newklass + 16) = *(IntPtr*)(newklass + 72);
-        //*(IntPtr*)(newklass + 0) = Marshal.StringToHGlobalAnsi(type.Namespace);
-        //*(IntPtr*)(newklass + 104) = Marshal.StringToHGlobalAnsi(type.Name);
-        //*(IntPtr*)(newklass + 152) = newklass;
-        //*(IntPtr*)(newklass + 192) = newklass;
-        //*(IntPtr*)(newklass + 64) = (IntPtr)0; // interop
-        //*(IntPtr*)(newklass + 168) = (IntPtr)0; // metadata?
-        //*(IntPtr*)(newklass + 144) = (IntPtr)0; // metadata?
 
         Il2CppClassPointerStore.SetNativeClassPointer(type, newklass.Pointer);
         RuntimeSpecificsStore.SetClassInfo(newklass.Pointer, true);
