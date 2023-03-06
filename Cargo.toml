@@ -1,2 +1,5 @@
+[patch."https://github.com/RinLovesYou/dobby-sys.git"]
+dobby-sys = { path = "../dobby-sys" }
+
 [workspace]
 members = [ "Bootstrap", "Proxy" ]
