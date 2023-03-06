@@ -36,7 +36,7 @@ pub struct Il2Cpp {
 
 impl Il2Cpp {
     pub fn new(base_path: PathBuf) -> Result<Self, Box<dyn error::Error>> {
-        let game_assembly_path = join_dll_path!(base_path, "GameAssembly");
+        let game_assembly_path = join_dll_path!(base_path.join("GenshinImpact_Data\\Native"), "UserAssembly");
 
         if !game_assembly_path.exists() {
             return Err(Box::new(Il2CppError::GameAssemblyNotFound));

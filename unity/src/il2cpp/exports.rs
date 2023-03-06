@@ -27,12 +27,12 @@ impl Il2CppExports {
     /// looks up and returns all methods from il2cpp
     pub fn new(lib: &NativeLibrary) -> Result<Il2CppExports, LibError> {
         Ok(Il2CppExports {
-            il2cpp_init: Some(lib.sym("il2cpp_init")?),
-            il2cpp_thread_current: Some(lib.sym("il2cpp_thread_current")?),
-            il2cpp_runtime_invoke: Some(lib.sym("il2cpp_runtime_invoke")?),
-            il2cpp_method_get_name: Some(lib.sym("il2cpp_method_get_name")?),
-            il2cpp_thread_attach: Some(lib.sym("il2cpp_thread_attach")?),
-            il2cpp_domain_get: Some(lib.sym("il2cpp_domain_get")?),
+            il2cpp_init: Some(lib.offset(0x9927B0)?),
+            il2cpp_thread_current: None,//Some(proxy.sym("il2cpp_thread_current")?),
+            il2cpp_runtime_invoke: Some(lib.offset(0x9962F0)?),
+            il2cpp_method_get_name: Some(lib.offset(0x98C640)?),
+            il2cpp_thread_attach: Some(lib.offset(0x981FF0)?),
+            il2cpp_domain_get: Some(lib.offset(0x988A70)?),
         })
     }
 }

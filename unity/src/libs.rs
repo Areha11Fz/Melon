@@ -101,6 +101,15 @@ impl NativeLibrary {
             pd: PhantomData,
         })
     }
+
+    pub fn offset<T>(&self, offset: usize) -> Result<NativeMethod<T>, LibError> {
+        let ptr = unsafe { self.handle.cast::<u8>().add(offset) };
+
+        Ok(NativeMethod {
+            inner: ptr.cast(),
+            pd: PhantomData,
+        })
+    }
 }
 
 /// loads a library permanently
