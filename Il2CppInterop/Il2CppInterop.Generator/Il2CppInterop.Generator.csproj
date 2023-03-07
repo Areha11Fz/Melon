@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Il2CppInterop.Generator</PackageId>
+    <Authors>knah, BepInEx et al.</Authors>
+    <Description>Library for generating assemblies and metadata for calling Il2Cpp functions from .NET</Description>
+    <TargetFrameworks>netstandard2.1;net472</TargetFrameworks>
+    <RootNamespace>Il2CppInterop.Generator</RootNamespace>
+    <Configurations>Debug;Release</Configurations>
+    <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="IsExternalInit" Version="1.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Mono.Cecil" Version="0.11.3"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Il2CppInterop.Common\Il2CppInterop.Common.csproj"/>
+  </ItemGroup>
+</Project>
