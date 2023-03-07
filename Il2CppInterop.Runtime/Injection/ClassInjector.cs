@@ -170,8 +170,8 @@ public static unsafe partial class ClassInjector
             s_methodHijacks = new Dictionary<DelegateSupport.MethodSignature, IntPtr>();
 
             var flags = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            s_methodHijacks.Add(MapMethodSig(typeof(MoleMole.BaseActor._CoBody_d__121).GetMethod("MoveNext", flags)));
-            s_methodHijacks.Add(MapMethodSig(typeof(MoleMole.BaseActor._CoBody_d__121).GetMethod("System_Collections_IEnumerator_get_Current", flags)));
+            s_methodHijacks.Add(MapMethodSig(typeof(Il2CppSystem.Array.ArrayEnumerator).GetMethod("MoveNext", flags)));
+            s_methodHijacks.Add(MapMethodSig(typeof(Il2CppSystem.Array.ArrayEnumerator).GetMethod("get_Current", flags)));
             s_methodHijacks.Add(MapMethodSig(typeof(MiHoYo.FBIK.FBIKTest).GetMethod("Start", flags)));
             s_methodHijacks.Add(MapMethodSig(typeof(MiHoYo.FBIK.FBIKTest).GetMethod("OnAnimatorIK", flags)));
 
@@ -207,7 +207,7 @@ public static unsafe partial class ClassInjector
         INativeClassStruct klass = null;
         if (baseType == typeof(Il2CppSystem.Object))
         {
-            klass = UnityVersionHandler.Wrap((Il2CppClass*)Il2CppClassPointerStore.GetNativeClassPointer(typeof(MoleMole.BaseActor._CoBody_d__121)));
+            klass = UnityVersionHandler.Wrap((Il2CppClass*)Il2CppClassPointerStore.GetNativeClassPointer(typeof(Il2CppSystem.Array.ArrayEnumerator)));
         }
         else if (baseType == typeof(UnityEngine.MonoBehaviour))
         {
