@@ -30,9 +30,7 @@ static mut WINDOW: HWND = std::ptr::null_mut();
 /// Initializes the console
 pub fn init() -> Result<(), Box<dyn error::Error>> {
     unsafe {
-        if AllocConsole() != 1 {
-            return Err(Box::new(ConsoleError::FailedToAllocateConsole));
-        }
+        AllocConsole();
 
         WINDOW = GetConsoleWindow();
         if WINDOW.is_null() {
