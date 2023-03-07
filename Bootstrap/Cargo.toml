@@ -19,7 +19,7 @@ netcorehost = "*"
 dobby-rs = { git = "https://github.com/RinLovesYou/dobby-rs" }
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3.9", features = ["winuser", "minwindef", "std", "libloaderapi", "memoryapi"] }
+winapi = { version = "0.3.9", features = ["winuser", "minwindef", "std", "libloaderapi", "memoryapi", "synchapi"] }
 
 
 [lib]
