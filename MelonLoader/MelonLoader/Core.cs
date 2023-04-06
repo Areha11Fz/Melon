@@ -21,7 +21,7 @@ namespace MelonLoader
     {
         internal static HarmonyLib.Harmony HarmonyInstance;
         
-        internal static bool Is_ALPHA_PreRelease = true;
+        internal static bool Is_ALPHA_PreRelease = false;
 
         internal static NativeLibrary.StringDelegate WineGetVersion;
 
@@ -100,7 +100,7 @@ namespace MelonLoader
         internal static int PreStart()
         {
             MelonEvents.OnApplicationEarlyStart.Invoke();
-            return 1;//MelonStartScreen.LoadAndRun(Il2CppGameSetup);
+            return 1;// MelonStartScreen.LoadAndRun(Il2CppGameSetup);
         }
 
         private static int Il2CppGameSetup()

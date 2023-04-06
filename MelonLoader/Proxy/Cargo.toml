@@ -10,10 +10,12 @@ ctor = "0.1.26"
 msgbox = "0.7.0"
 lazy_static = "1.4.0"
 thiserror = "*"
+libloading = "*"
+clap = { git = "https://github.com/RinLovesYou/clap", features = ["derive"] }
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3.9", features = ["winuser", "minwindef", "std", "libloaderapi"] }
 proxy-dll = { git = "https://github.com/RinLovesYou/dll-proxy-rs.git" }
+#proxy-dll = { path = "C:\\Users\\sarah\\Documents\\rust\\dll-proxy-rs\\proxy" }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2.137"
@@ -21,11 +23,6 @@ libc = "0.2.137"
 [lib]
 name = "version"
 crate-type = ["cdylib"]
-
-[profile.release]
-lto = true
-codegen-units = 1
-opt-level = "z"
 
 [build-dependencies]
 cc = "1.0.76"
