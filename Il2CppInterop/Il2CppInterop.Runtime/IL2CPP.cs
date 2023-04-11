@@ -403,8 +403,8 @@ public static unsafe class IL2CPP
     {
         var mod = GIBridge.Reflection_GetModuleObject(image);
         var obj = GIBridge.WrappedObject.FromPtr(mod);
-        var scopename = obj.GetProperty("ScopeName").ToString();
-        return Marshal.StringToHGlobalAnsi(scopename + ".dll"); // mem leak
+        var name = obj.ToString();
+        return Marshal.StringToHGlobalAnsi(name); // mem leak
     }
 
     public static uint il2cpp_method_get_token(IntPtr method) => UnityVersionHandler.Wrap((Il2CppMethodInfo*)method).Token;
@@ -418,7 +418,7 @@ public static unsafe class IL2CPP
         GIBridge.CallMethodStatic(il2cpp_object_get_class(f), "SetValueInternal", f, IntPtr.Zero, (IntPtr)value);
     }
 
-    public static uint il2cpp_field_get_offset(IntPtr field) => (uint)UnityVersionHandler.Wrap((Il2CppFieldInfo*)field).Offset ^ 0x639557C;
+    public static uint il2cpp_field_get_offset(IntPtr field) => (uint)UnityVersionHandler.Wrap((Il2CppFieldInfo*)field).Offset ^ 0x21C59724;
 
     public static int il2cpp_string_length(IntPtr str) => ((Il2CppString*)str)->len;
 
@@ -431,11 +431,8 @@ public static unsafe class IL2CPP
     public static IntPtr* il2cpp_domain_get_assemblies(IntPtr domain, ref uint size)
     {
         var AppDomain = il2cpp_class_from_name(GIBridge.corlib, "System", "AppDomain");
-        var GetAssemblies = il2cpp_class_get_method_from_name(AppDomain, "GetAssemblies", 0);
-
-        var exc = IntPtr.Zero;
-        var res = il2cpp_runtime_invoke(GetAssemblies, IntPtr.Zero, null, ref exc);
-        var asms_array = GIBridge.WrappedArray.FromPtr(res);
+        var asms = GIBridge.CallMethodStatic(AppDomain, "GetAssemblies");
+        var asms_array = GIBridge.WrappedArray.FromPtr(asms.Pointer);
 
         size = asms_array.GetLength();
         IntPtr* assemblies = (IntPtr*)Marshal.AllocHGlobal((int)size * sizeof(IntPtr));
@@ -452,18 +449,10 @@ public static unsafe class IL2CPP
         var type = GIBridge.Reflection_GetTypeObject(t);
 
         var system_array = il2cpp_class_from_name(GIBridge.corlib, "System", "Array");
-        var int32_class = il2cpp_class_from_name(GIBridge.corlib, "System", "Int32");
-
-        var CreateInstance = GetIl2CppMethodByToken(system_array, 100664338);
 
         var len = (uint)length;
-        var p = &len;
-        IntPtr[] args = { type, (IntPtr)p };
-        fixed (IntPtr* ptr = args)
-        {
-            var exc = IntPtr.Zero;
-            return il2cpp_runtime_invoke(CreateInstance, IntPtr.Zero, (void**)ptr, ref exc);
-        }
+        var pLen = &len;
+        return GIBridge.CallMethodStatic(system_array, "CreateInstance", type, (IntPtr)pLen).Pointer;
     }
 
     public static uint il2cpp_array_length(IntPtr array) => GIBridge.WrappedArray.FromPtr(array).GetLength();
@@ -472,12 +461,9 @@ public static unsafe class IL2CPP
     {
         // type.MakeArrayType(rank)
         var elem = GIBridge.Reflection_GetTypeObject(il2cpp_class_get_type(element_class));
-        var int32_class = il2cpp_class_from_name(GIBridge.corlib, "System", "Int32");
 
-        var p = &rank;
-        var rank_boxed = il2cpp_value_box(int32_class, (IntPtr)p);
-
-        var array_type = GIBridge.WrappedObject.FromPtr(elem).CallMethod("MakeArrayType", rank_boxed);
+        var pRank = &rank;
+        var array_type = GIBridge.WrappedObject.FromPtr(elem).CallMethod("MakeArrayType", (IntPtr)pRank);
         var type = ((Il2CppReflectionType*)array_type.Pointer)->type;
         return il2cpp_class_from_type((IntPtr)type);
     }
@@ -497,23 +483,21 @@ public static unsafe class IL2CPP
         // klass.IsAssignableFrom(oklass)
         var t1 = GIBridge.Reflection_GetTypeObject(il2cpp_class_get_type(klass));
         var t2 = GIBridge.Reflection_GetTypeObject(il2cpp_class_get_type(oklass));
-        var res = GIBridge.WrappedObject.FromPtr(t1).CallMethod("IsAssignableFrom", t2).Pointer;
-        return *(bool*)il2cpp_object_unbox(res);
+        var res = GIBridge.WrappedObject.FromPtr(t1).CallMethod("IsAssignableFrom", t2);
+        return GIBridge.Unbox<bool>(res.Pointer);
     }
 
-    public static bool il2cpp_class_is_valuetype(IntPtr klass)
-    {
-        var t = il2cpp_class_get_type(klass);
-        var type = GIBridge.Reflection_GetTypeObject(t);
-        var res = GIBridge.WrappedObject.FromPtr(type).GetProperty("IsValueType").Pointer;
-        return *(bool*)il2cpp_object_unbox(res);
-    }
+    public static bool il2cpp_class_is_valuetype(IntPtr klass) => UnityVersionHandler.Wrap((Il2CppClass*)klass).ValueType;
 
     public static IntPtr il2cpp_class_get_field_from_name(IntPtr klass, string name)
     {
         var t = il2cpp_class_get_type(klass);
         var type = GIBridge.Reflection_GetTypeObject(t);
-        var field = GIBridge.WrappedObject.FromPtr(type).CallMethod("GetField", il2cpp_string_new(name), GIBridge.AllBindingFlags());
+
+        var flags = (uint)GIBridge.AllBindingFlags;
+        var pFlags = &flags;
+
+        var field = GIBridge.WrappedObject.FromPtr(type).CallMethod("GetField", il2cpp_string_new(name), (IntPtr)pFlags);
         return (IntPtr)((Il2CppReflectionField*)field.Pointer)->field;
     }
 

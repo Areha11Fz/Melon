@@ -18,7 +18,7 @@ use crate::{
         thread::UnityThread, image::UnityImage, class::UnityClass, property::UnityProperty,
     },
     join_dll_path,
-    libs::{self, NativeLibrary, NativeMethod},
+    libs::{self, NativeLibrary},
     mono::AssemblyHookType,
     runtime::{Runtime, RuntimeError, RuntimeType},
 };
@@ -39,7 +39,7 @@ unsafe impl Sync for Il2Cpp {}
 
 impl Il2Cpp {
     pub fn new(base_path: PathBuf) -> Result<Self, RuntimeError> {
-        let game_assembly_path = join_dll_path!(base_path, "GameAssembly");
+        let game_assembly_path = join_dll_path!(base_path.join("GenshinImpact_Data\\Native"), "UserAssembly");
 
         if !game_assembly_path.exists() {
             return Err(RuntimeError::GameAssemblyNotFound);
@@ -63,13 +63,33 @@ impl Runtime for Il2Cpp {
     }
 
     fn get_export_ptr(&self, name: &str) -> Result<MethodPointer, RuntimeError> {
-        let function: NativeMethod<fn()> = self.game_assembly.sym(name)?;
+        let f = match name {
+            "il2cpp_init" => 
+                self
+                .exports
+                .clone()
+                .il2cpp_init
+                .ok_or(RuntimeError::MissingFunction("il2cpp_init"))?
+                .inner,
+            "il2cpp_runtime_invoke" => 
+                self
+                .exports
+                .clone()
+                .il2cpp_runtime_invoke
+                .ok_or(RuntimeError::MissingFunction("il2cpp_runtime_invoke"))?
+                .inner,
+            _ => return Err(RuntimeError::ReturnedNull("get_export_ptr"))
+        };
+
+        Ok(f)
+        
+        /*let function: NativeMethod<fn()> = self.game_assembly.sym(name)?;
 
         if function.inner.is_null() {
             return Err(RuntimeError::ReturnedNull("get_export_ptr"));
         }
 
-        Ok(function.inner)
+        Ok(function.inner)*/
     }
 
     fn get_current_thread(&self) -> Result<UnityThread, RuntimeError> {

@@ -32,10 +32,10 @@ namespace Il2CppInterop.Runtime.Injection
 
         internal static IntPtr Il2CppHandle = NativeLibrary.Load("UserAssembly", typeof(InjectorHelpers).Assembly, null);
 
-        private static IntPtr classFromType = Il2CppHandle + 0x985300;
-        private static IntPtr getTypeInfoFromTypeDefinitionIndex = Il2CppHandle + 0x9907A0;
-        private static IntPtr classFromName = Il2CppHandle + 0x985590;
-        private static IntPtr getMBMethods = Il2CppHandle + 0x98B510;
+        private static IntPtr classFromType = Il2CppHandle + 0x87F6B0;
+        private static IntPtr getTypeInfoFromTypeDefinitionIndex = Il2CppHandle + 0x88AC50;
+        private static IntPtr classFromName = Il2CppHandle + 0x87CCD0;
+        private static IntPtr getMBMethods = Il2CppHandle + 0x885940;
 
         internal static readonly Dictionary<Type, OpCode> StIndOpcodes = new()
         {

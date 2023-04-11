@@ -25,16 +25,18 @@ namespace Il2CppInterop.Runtime.Runtime.VersionSpecific.Class
         [StructLayout(LayoutKind.Explicit, Size = 328)]
         internal unsafe struct Il2CppClass_23_0
         {
-            [FieldOffset(208)]
+            [FieldOffset(128)]
             public Il2CppTypeStruct byval_arg;
-            [FieldOffset(168)]
+            [FieldOffset(40)]
             public Il2CppMethodInfo** methods;
-            [FieldOffset(252)]
+            [FieldOffset(264)]
             public uint instance_size;
-            [FieldOffset(302)]
+            [FieldOffset(290)]
             public ushort vtable_count;
-            [FieldOffset(298)]
+            [FieldOffset(302)]
             public ushort method_count;
+            [FieldOffset(313)]
+            public byte valuetype;
 
             [FieldOffset(0)]
             public Il2CppImage* image;
@@ -203,8 +205,8 @@ namespace Il2CppInterop.Runtime.Runtime.VersionSpecific.Class
             public ref Il2CppClass** TypeHierarchy => ref _->typeHierarchy;
             public bool ValueType
             {
-                get => this.CheckBit(_bitfield0offset, (int)Il2CppClass_23_0.Bitfield0.BIT_valuetype);
-                set => this.SetBit(_bitfield0offset, (int)Il2CppClass_23_0.Bitfield0.BIT_valuetype, value);
+                get => _->valuetype != 0;
+                set => _->valuetype = (byte)(value ? 1 : 0);
             }
             public bool Initialized
             {
